@@ -1,0 +1,43 @@
+from typing import List, Dict
+import re
+
+def build_selection_prompt(stories: List[Dict]) -> str:
+    """Build prompt for story selection with proper content extraction"""
+    stories_text = []
+    
+    for i, story in enumerate(stories):
+        # Extract content from HTML if present
+        content = story.get('description', '').replace('<a href="', '\n[Link: ')
+        content = content.replace('</a>', ']')
+        content = content.replace('&nbsp;', ' ')
+        content = re.sub(r'<[^>]+>', '', content)  # Remove remaining HTML tags
+        
+        story_text = (
+            f"Story {i+1}:\n"
+            f"Title: {story['title']}\n"
+            f"Description: {content}\n"
+        )
+        stories_text.append(story_text)
+    
+    formatted_stories = "\n\n".join(stories_text)
+    
+    return f"""TASK: Select the most relevant story for the [COMPANY_NAME] company Blog. [COMPANY_DESCRIPTION]
+
+CRITERIA:
+1. [CRITERION_1]
+2. [CRITERION_2]
+3. [CRITERION_3]
+
+STORIES:
+{formatted_stories}
+
+RESPONSE FORMAT:
+{{
+    "selected_index": <number 1-{len(stories)}>,
+    "title": "<selected story title>",
+    "reasoning": "<brief technical explanation>",
+    "source_url": "<extracted from story>",
+    "relevance_score": <number 1-10>
+}}
+
+Select the story with the best match towards [COMPANY_NAME] and respond ONLY with the JSON format above."""

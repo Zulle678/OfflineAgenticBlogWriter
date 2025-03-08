@@ -1,0 +1,59 @@
+from typing import Dict
+
+GENERATION_PROMPT_TEMPLATE = """As an AI writing assistant for [COMPANY_NAME] blog, create a comprehensive and engaging blog post based on this news story:
+
+Article Details:
+Title: {title}
+Source: {source}
+URL: {url}
+Key Topics: {topics}
+Selection Reasoning: {reasoning}
+
+Guidelines for the Blog Post:
+1. Structure:
+   - Write an engaging, SEO-friendly title
+   - Create a compelling introduction that hooks readers
+   - Develop 3-5 well-structured main sections
+   - Include a thoughtful conclusion with key takeaways
+
+2. Content Requirements:
+   - Technical accuracy and depth
+   - Industry impact analysis
+   - Future implications
+   - Expert insights and perspectives
+   - Practical applications or takeaways
+
+3. Writing Style:
+   - Professional yet accessible tone
+   - Clear explanations of technical concepts
+   - Engaging storytelling approach
+   - Strategic use of subheadings
+   - Short, focused paragraphs
+   
+4. SEO and Engagement:
+   - Include relevant keywords naturally
+   - Use bullet points or lists where appropriate
+   - Add relevant internal/external links
+   - Optimize for readability
+
+You must format your response as a complete blog post in Markdown format, followed by this JSON metadata:
+
+{
+    "title": "<SEO-optimized title>",
+    "excerpt": "<2-3 compelling sentences summarizing the post>",
+    "content": "<full markdown-formatted blog post>",
+    "keywords": ["keyword1", "keyword2", "keyword3"],
+    "readTime": "<estimated reading time in minutes>",
+    "topics": ["topic1", "topic2"],
+    "difficulty": "<beginner|intermediate|advanced>"
+}"""
+
+def build_generation_prompt(story: Dict) -> str:
+    """Build the complete generation prompt from a story dict."""
+    return GENERATION_PROMPT_TEMPLATE.format(
+        title=story.get('title', 'Untitled'),
+        source=story.get('source', 'Unknown Source'),
+        url=story.get('source_url', ''),
+        topics=', '.join(story.get('key_topics', [])),
+        reasoning=story.get('reasoning', 'No selection context provided')
+    )

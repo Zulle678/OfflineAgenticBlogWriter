@@ -1,0 +1,33 @@
+# Environment files
+.env
+.env.*
+!.env.example
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Output
+posts/
+*.log
+
+.pytest_cache/
+
+# Prompt configuration files
+src/prompts/generation_prompt.py
+src/prompts/selection_prompt.py
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
