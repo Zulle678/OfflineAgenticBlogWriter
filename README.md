@@ -5,6 +5,14 @@ Peronal note: I know its likely messy code and will have people laugh, cry or wh
 ## Overview
 An AI-powered blog automation system that scrapes technology news, analyzes relevance using keywords, generates blog posts using LLM (Ollama), and creates TypeScript blog posts. The system focuses on AI, technology, and digital transformation topics.
 
+LLMs successfully tested:
+   - Llama2
+   - Llama3.1
+   - Llama3.2
+   - phi3
+   - phi4
+   - deepseek-r1
+
 ## System Architecture
 
 ### Core Components
