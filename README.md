@@ -185,5 +185,9 @@ MIT License
 ## Acknowledgments
 - Google News for providing news articles
 - Ollama for LLM capabilities
-- Python community for libraries and frameworks
+- Key open-source libraries:
+  - requests by Kenneth Reitz
+  - python-dotenv by Saurabh Kumar
+  - PyYAML by Kirill Simonov
+  - feedparser by Kurt McKee
 
