@@ -1,0 +1,24 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Output
+posts/
+*.log
+
+.pytest_cache/
+
+# Prompt configuration files
+src/prompts/generation_prompt.py
+src/prompts/selection_prompt.py
