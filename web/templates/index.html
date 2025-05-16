@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Blog Writer Scheduler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .container {
+            background-color: #f7f7f7;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .run-now-btn {
+            background-color: #2196F3;
+        }
+        .run-now-btn:hover {
+            background-color: #0b7dda;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agentic Blog Writer Scheduler</h1>
+    
+    <div class="container">
+        <h2>Schedule Configuration</h2>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="enable-schedule"> Enable Scheduled Running
+            </label>
+        </div>
+        
+        <div id="schedule-options" class="disabled">
+            <div class="form-group">
+                <label for="schedule-type">Schedule Type</label>
+                <select id="schedule-type">
+                    <option value="interval">Interval (Every X Hours)</option>
+                    <option value="cron">Specific Time (Cron)</option>
+                </select>
+            </div>
+            
+            <!-- Interval options -->
+            <div id="interval-options">
+                <div class="form-group">
+                    <label for="interval-hours">Hours Between Runs</label>
+                    <input type="number" id="interval-hours" min="1" max="168" value="24">
+                </div>
+            </div>
+            
+            <!-- Cron options -->
+            <div id="cron-options" class="hidden">
+                <div class="form-group">
+                    <label for="day-of-week">Day of Week</label>
+                    <select id="day-of-week">
+                        <option value="*">Every day</option>
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="hour">Hour (24-hour format)</label>
+                    <input type="number" id="hour" min="0" max="23" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="minute">Minute</label>
+                    <input type="number" id="minute" min="0" max="59" value="0">
+                </div>
+            </div>
+        </div>
+        
+        <button id="save-schedule">Save Schedule</button>
+    </div>
+    
+    <div class="container">
+        <h2>Manual Execution</h2>
+        <p>Click the button below to run the blog generator immediately:</p>
+        <button id="run-now" class="run-now-btn">Run Now</button>
+    </div>
+    
+    <div id="status" class="status hidden"></div>
+    
+    <script>
+        // DOM elements
+        const enableScheduleCheckbox = document.getElementById('enable-schedule');
+        const scheduleOptionsDiv = document.getElementById('schedule-options');
+        const scheduleTypeSelect = document.getElementById('schedule-type');
+        const intervalOptionsDiv = document.getElementById('interval-options');
+        const cronOptionsDiv = document.getElementById('cron-options');
+        const saveScheduleButton = document.getElementById('save-schedule');
+        const runNowButton = document.getElementById('run-now');
+        const statusDiv = document.getElementById('status');
+        
+        // Load current schedule
+        fetch('/api/schedule')
+            .then(response => response.json())
+            .then(data => {
+                if (data.enabled) {
+                    enableScheduleCheckbox.checked = true;
+                    scheduleOptionsDiv.classList.remove('disabled');
+                    
+                    const schedule = data.schedule;
+                    scheduleTypeSelect.value = schedule.type || 'interval';
+                    
+                    if (schedule.type === 'interval') {
+                        document.getElementById('interval-hours').value = schedule.hours || 24;
+                        intervalOptionsDiv.classList.remove('hidden');
+                        cronOptionsDiv.classList.add('hidden');
+                    } else if (schedule.type === 'cron') {
+                        document.getElementById('day-of-week').value = schedule.day_of_week || '*';
+                        document.getElementById('hour').value = schedule.hour || 0;
+                        document.getElementById('minute').value = schedule.minute || 0;
+                        intervalOptionsDiv.classList.add('hidden');
+                        cronOptionsDiv.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                showStatus('Error loading schedule: ' + error.message, 'error');
+            });
+        
+        // Event listeners
+        enableScheduleCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                scheduleOptionsDiv.classList.remove('disabled');
+            } else {
+                scheduleOptionsDiv.classList.add('disabled');
+            }
+        });
+        
+        scheduleTypeSelect.addEventListener('change', function() {
+            if (this.value === 'interval') {
+                intervalOptionsDiv.classList.remove('hidden');
+                cronOptionsDiv.classList.add('hidden');
+            } else {
+                intervalOptionsDiv.classList.add('hidden');
+                cronOptionsDiv.classList.remove('hidden');
+            }
+        });
+        
+        saveScheduleButton.addEventListener('click', function() {
+            const data = {
+                enabled: enableScheduleCheckbox.checked,
+                type: scheduleTypeSelect.value
+            };
+            
+            if (data.type === 'interval') {
+                data.hours = parseInt(document.getElementById('interval-hours').value);
+            } else if (data.type === 'cron') {
+                data.day_of_week = document.getElementById('day-of-week').value;
+                data.hour = parseInt(document.getElementById('hour').value);
+                data.minute = parseInt(document.getElementById('minute').value);
+            }
+            
+            fetch('/api/schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                showStatus('Schedule saved successfully!', 'success');
+            })
+            .catch(error => {
+                showStatus('Error saving schedule: ' + error.message, 'error');
+            });
+        });
+        
+        runNowButton.addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = 'Running...';
+            
+            fetch('/api/run-now', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(result => {
+                showStatus('Blog generator started!', 'success');
+            })
+            .catch(error => {
+                showStatus('Error starting blog generator: ' + error.message, 'error');
+            })
+            .finally(() => {
+                runNowButton.disabled = false;
+                runNowButton.textContent = 'Run Now';
+            });
+        });
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

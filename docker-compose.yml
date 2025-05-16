@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      # You can customize the host paths by modifying these volumes
+      - ${POSTS_DIR:-./output}:/app/output
+      - ${LOGS_DIR:-./logs}:/app/logs
+      - ${CONFIG_DIR:-./config}:/app/config
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama2}
+      - OLLAMA_TIMEOUT=${OLLAMA_TIMEOUT:-300}
+      - OLLAMA_NUM_CTX=${OLLAMA_NUM_CTX:-4096}
+      - NEWS_SOURCE=${NEWS_SOURCE:-https://news.google.com}
+      - NEWS_LANGUAGE=${NEWS_LANGUAGE:-en}
+      - NEWS_PERIOD=${NEWS_PERIOD:-7d}
+      - NEWS_NUM_STORIES=${NEWS_NUM_STORIES:-10}
+      - BLOG_CATEGORIES=${BLOG_CATEGORIES:-Technology}
+      - BLOG_MIN_PARAGRAPHS=${BLOG_MIN_PARAGRAPHS:-3}
+      - BLOG_MAX_PARAGRAPHS=${BLOG_MAX_PARAGRAPHS:-10}
+      - BLOG_KEYWORDS_PER_POST=${BLOG_KEYWORDS_PER_POST:-5}
+      - BLOG_INCLUDE_REFERENCES=${BLOG_INCLUDE_REFERENCES:-true}
+      - BLOG_ENABLE_MARKDOWN=${BLOG_ENABLE_MARKDOWN:-true}
+      - LOCAL_BLOG=true
+      - LOCAL_BLOG_PATH=/app/output/posts
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ollama_data:

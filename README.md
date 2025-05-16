@@ -153,6 +153,8 @@ CRITERION_3 = "Current technological trends"
 
 ## Usage
 
+### Standard Usage
+
 Run the application:
 ```bash
 python src/main.py
@@ -163,6 +165,18 @@ The system will:
 2. Select the most relevant story
 3. Generate a blog post with citations
 4. Save the post to `output/posts/`
+
+### Docker Usage
+
+This project supports Docker deployment with a web interface for scheduling:
+
+```bash
+docker compose up -d
+```
+
+Then access the web interface at `http://localhost:5000`
+
+For detailed Docker instructions, see [DOCKER.md](DOCKER.md)
 
 ## Error Handling
 
